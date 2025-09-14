@@ -5,6 +5,9 @@
 #include "types.h"
 #include "utils.h"
 
+uint16_t reg[R_COUNT];
+uint16_t memory[MEMORY_MAX];
+
 int main(int argc, const char *argv[]) {
     // Arguments
     if (argc < 2) {
@@ -156,10 +159,60 @@ int main(int argc, const char *argv[]) {
 		break;
 	    }
 	    case OP_TRAP: {
+		reg[R_R7] = reg[R_PC];
+		switch (instr & 0xFF) {
+		    case TRAP_GETC: {
+			reg[R_R0] = (uint16_t) getchar();
+			update_flags(R_R0);
+			break;
+		    }
+		    case TRAP_PUTS: {
+			putc((char) reg[R_R0], stdout);
+			fflush(stdout);
+			break;
+		    }
+		    case TRAP_PUTSP: {
+			uint16_t *c = memory + reg[R_R0];
+			while (*c) {
+			    char c1 = (*c) & 0xFF;
+			    putc(c1, stdout);
+			    char c2 = (*c) >> 8;
+			    if (c2) putc(c2, stdout);
+			    c++;
+			}
+			fflush(stdout);
+			break;
+		    }
+		    case TRAP_IN: {
+			printf("Enter a character: \n");
+			char c = getchar();
+			putc(c, stdout);
+			fflush(stdout);
+			reg[R_R0] = (uint16_t) c;
+			update_flags(R_R0);
+			break;
+		    }
+		    case TRAP_OUT: {
+			putc((char)reg[R_R0], stdout);
+			fflush(stdout);
+			break;
+		    }
+		    case TRAP_HALT: {
+			puts("HALT");
+			fflush(stdout);
+			running = 0;
+			break;
+		    }
+		}
 		break;
 	    }
 	    case OP_RES: { abort(); }
 	    case OP_RTI: { abort(); }
+	    default: {
+		abort();
+		break;
+	    }
 	}
     }
+    restore_input_buffering();
 }

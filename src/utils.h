@@ -2,8 +2,9 @@
 #include <stdint.h>
 #include <stdio.h>
 
+// The names of the functions are pretty self-explanatory ig.
 void update_flags(uint16_t r);
-uint16_t sign_extend(uint16_t t, int bit_count);
+uint16_t sign_extend(uint16_t x, int bit_count);
 uint16_t mem_read(uint16_t address);
 void mem_write(uint16_t address, uint16_t val);
 void read_image_file(FILE *file);
@@ -12,5 +13,4 @@ uint16_t swap16(uint16_t x);
 void disable_input_buffering();
 void restore_input_buffering();
 uint16_t check_key();
-char get_char();
 void handle_interrupt(int signal);

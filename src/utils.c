@@ -5,6 +5,10 @@
 #include <stdlib.h>
 #include "utils.h"
 #include "types.h"
+#include <unistd.h>      // for STDIN_FILENO
+#include <termios.h>     // for struct termios, tcgetattr, tcsetattr
+#include <sys/select.h>  // for select(), fd_set, FD_SET macros
+#include <sys/time.h>    // for struct timeval
 
 void update_flags(uint16_t r) {
     if (reg[r] == 0) {
@@ -57,7 +61,7 @@ uint16_t mem_read(uint16_t address) {
     if (address == MR_KBSR) {
 	if (check_key()) {
 	    memory[MR_KBSR] = (1 << 15);
-	    memory[MR_KBDA] = get_char();
+	    memory[MR_KBDA] = getchar(); 
 	}
 	else {
 	    memory[MR_KBSR] = 0;
@@ -77,4 +81,27 @@ uint16_t sign_extend(uint16_t x, int bit_count) {
 	x |= 0xFFFF << bit_count; // negative numbers were also handled here
     }
     return x;
+}
+
+struct termios original_tio;
+struct timeval timeout;
+
+void disable_input_buffering() {
+    tcgetattr(STDIN_FILENO, &original_tio);
+    struct termios new_tio = original_tio;
+    new_tio.c_lflag &= ~ICANON & ~ECHO;
+    tcsetattr(STDIN_FILENO, TCSANOW, &new_tio);
+}
+
+void restore_input_buffering() {
+    tcsetattr(STDIN_FILENO, TCSANOW, &original_tio);
+}
+
+uint16_t check_key() {
+    fd_set readfds;
+    FD_ZERO(&readfds);
+    FD_SET(STDIN_FILENO, &readfds);
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 0;
+    return select(1, &readfds, NULL, NULL, &timeout) != 0;
 }
