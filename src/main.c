@@ -8,10 +8,10 @@
 uint16_t reg[R_COUNT];
 uint16_t memory[MEMORY_MAX];
 
-int main(int argc, const char *argv[]) {
+int main(int argc, const char* argv[]) {
     // Arguments
     if (argc < 2) {
-	printf("lc3 [image-file]\n");
+	printf("lc3 [image-file] ...\n");
 	exit(2);
     }
 
@@ -25,7 +25,6 @@ int main(int argc, const char *argv[]) {
     // Setup
     signal(SIGINT, handle_interrupt);
     disable_input_buffering();
-    restore_input_buffering();
 
     // First we will load data from memory to CPU register's addresses
     // A flag must be attached to each instruction executed
@@ -44,12 +43,15 @@ int main(int argc, const char *argv[]) {
 	    case OP_ADD: {
 		// destination register
 		uint16_t r0 = (instr >> 9) & 0x7;
-		// first opperand
+		// first opperand, first source register
 		uint16_t r1 = (instr >> 6) & 0x7;
-		// checking if we're in a immediate mode
+		// defining the immediate flag
 		uint16_t imm_flag = (instr >> 5) & 0x1;
 
 		if (imm_flag) {
+		    // second source register, here we have 5-bits signed values
+		    // now in order to make them compatible with other 16-bit values
+		    // we will have to use sign_extend function.
 		    uint16_t imm5 = sign_extend(instr & 0x1F, 5);
 		    reg[r0] = reg[r1] + imm5;
 		}
@@ -67,14 +69,14 @@ int main(int argc, const char *argv[]) {
 
 		if (imm_flag) {
 		    uint16_t imm5 = sign_extend(instr & 0x1F, 5);
-		    reg[0] = reg[r1] & imm5;
+		    reg[r0] = reg[r1] & imm5;
 		}
 		else {
 		    uint16_t r2 = instr & 0x7;
 		    reg[r0] = reg[r1] & reg[r2];
 		    update_flags(r0);
-		    break;
 		}
+		break;
 	    }
 	    case OP_BR: {
 		uint16_t pc_offset = sign_extend(instr & 0x1FF, 9);
@@ -93,21 +95,21 @@ int main(int argc, const char *argv[]) {
 	    }
 	    case OP_JMP: {
 		uint16_t r1 = (instr >> 6) & 0x7;
-		reg[R_PC] = r1;
+		reg[R_PC] = reg[r1];
 		break;
 	    }
-	    case OP_JPR: {
+	    case OP_JSR: {
 		uint16_t long_flag = (instr >> 11) & 1;
 		reg[R_R7] = reg[R_PC];
 
 		if (long_flag) {
 		    uint16_t long_pc_offset = sign_extend((instr & 0x7FF) , 11);
 		    reg[R_PC] += long_pc_offset;
+		    break;
 		}
 		else {
 		    uint16_t r1 = (instr >> 6) & 0x7;
-		    reg[R_PC] += reg[r1];
-		    break;
+		    reg[R_PC] = reg[r1];
 		}
 	    }
 	    case OP_LD: {
@@ -117,13 +119,13 @@ int main(int argc, const char *argv[]) {
 		update_flags(r0);
 		break;
 	    }
-	    case OP_LDI: {
+	    /*case OP_LDI: {
 		uint16_t r0 = (instr >> 9) & 0x7;
 		uint16_t pc_offset = sign_extend((instr & 0x1FF), 9);
 		reg[r0] = mem_read(pc_offset + reg[R_PC]);
 		update_flags(r0);
 		break;
-	    }
+	    }*/
 	    case OP_LDR: {
 		uint16_t r0 = (instr >> 9) & 0x7;
 		uint16_t r1 = (instr >> 6) & 0x7;
@@ -167,12 +169,12 @@ int main(int argc, const char *argv[]) {
 			break;
 		    }
 		    case TRAP_PUTS: {
-			putc((char) reg[R_R0], stdout);
+			putc((char) memory[reg[R_R0]], stdout);
 			fflush(stdout);
 			break;
 		    }
 		    case TRAP_PUTSP: {
-			uint16_t *c = memory + reg[R_R0];
+			uint16_t* c = memory + reg[R_R0];
 			while (*c) {
 			    char c1 = (*c) & 0xFF;
 			    putc(c1, stdout);

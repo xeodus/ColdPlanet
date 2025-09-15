@@ -35,7 +35,7 @@ typedef enum {
     OP_BR = 0,  // branch
     OP_LD,      // load
     OP_ST,      // store
-    OP_JPR,     // jump register
+    OP_JSR,     // jump register
     OP_AND,     // bitwise additiod
     OP_ADD, 	// add
     OP_LDR,     // load register
