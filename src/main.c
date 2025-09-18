@@ -11,7 +11,7 @@ uint16_t memory[MEMORY_MAX];
 int main(int argc, const char* argv[]) {
     // Arguments
     if (argc < 2) {
-	printf("lc3 [image-file] ...\n");
+	printf("lc3 [image-file1] ...\n");
 	exit(2);
     }
 

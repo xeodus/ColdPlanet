@@ -1,3 +1,6 @@
+#ifndef UTILS_H
+#define UTILS_H
+
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -14,3 +17,5 @@ void disable_input_buffering();
 void restore_input_buffering();
 uint16_t check_key();
 void handle_interrupt(int signal);
+
+#endif

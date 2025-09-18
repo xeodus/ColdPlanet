@@ -1,3 +1,6 @@
+#ifndef TYPES_H
+#define TYPES_H
+
 #include <stdint.h>
 
 typedef enum {
@@ -50,6 +53,8 @@ typedef enum {
     OP_TRAP     // execute trap
 } OpCodes;
 
+// Conditional flags are used being used for only three
+// possibilities negative, zero, and positive.
 typedef enum {
     FL_POS = 1 << 0,
     FL_ZRO = 1 << 1,
@@ -57,10 +62,11 @@ typedef enum {
 } ConditionFlags; 
 
 typedef enum {
-    MR_KBSR = 0xFE00,
-    MR_KBDA = 0xFE02
+    MR_KBSR = 0xFE00,   // Keyboard status
+    MR_KBDA = 0xFE02    // Keyboard data
 } KeyboardMap;
 
+// Trap varients used for different I/O ops
 typedef enum {
     TRAP_GETC = 0x20,
     TRAP_OUT = 0x21,
@@ -69,3 +75,5 @@ typedef enum {
     TRAP_PUTSP = 0x24,
     TRAP_HALT = 0x25
 } Trap;
+
+#endif
