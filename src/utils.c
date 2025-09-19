@@ -23,7 +23,8 @@ void update_flags(uint16_t r) {
 }
 
 void read_image_file(FILE *file) {
-    // origin tells us where in the memory we need to place the image file.
+    // origin tells us where in the memory 
+    // we need to place the image file.
     uint16_t origin;
     fread(&origin, sizeof(origin), 1, file);
     // adding endianness, swap16's  called on each loaded 
@@ -41,7 +42,7 @@ void read_image_file(FILE *file) {
 }
 
 uint16_t swap16(uint16_t x) {
-    return (x << 8) || (x >> 8);
+    return (x << 8) | (x >> 8);
 }
 
 int read_image(const char *image_path) {
@@ -49,6 +50,8 @@ int read_image(const char *image_path) {
     if (!file) {
 	return 0;
     }
+    read_image_file(file);
+    printf("Successfully read the image file!");
     fclose(file);
     return 1;
 }
@@ -89,7 +92,7 @@ struct timeval timeout;
 void disable_input_buffering() {
     tcgetattr(STDIN_FILENO, &original_tio);
     struct termios new_tio = original_tio;
-    new_tio.c_lflag &= ~ICANON & ~ECHO;
+    new_tio.c_lflag &= ~(ICANON & ECHO);
     tcsetattr(STDIN_FILENO, TCSANOW, &new_tio);
 }
 

@@ -11,7 +11,7 @@ uint16_t memory[MEMORY_MAX];
 int main(int argc, const char* argv[]) {
     // Arguments
     if (argc < 2) {
-	printf("lc3 [image-file1] ...\n");
+	printf("lc3 [2048.obj] ...\n");
 	exit(2);
     }
 
@@ -164,12 +164,16 @@ int main(int argc, const char* argv[]) {
 		reg[R_R7] = reg[R_PC];
 		switch (instr & 0xFF) {
 		    case TRAP_GETC: {
-			reg[R_R0] = (uint16_t) getchar();
+			int c = getchar();
+			if (c == EOF) c = 0;
+			reg[R_R0] = (uint64_t) (c & 0xFF);
+			printf("Debugging for TRAP_GETC: %u", reg[R_R0]);
 			update_flags(R_R0);
 			break;
 		    }
 		    case TRAP_PUTS: {
 			putc((char) memory[reg[R_R0]], stdout);
+			printf("Debugging the TRAP_PUTS: R_R0=%u", reg[R_R0]);
 			fflush(stdout);
 			break;
 		    }
@@ -187,15 +191,18 @@ int main(int argc, const char* argv[]) {
 		    }
 		    case TRAP_IN: {
 			printf("Enter a character: \n");
-			char c = getchar();
+			int c = getchar();
+			if (c == EOF) c = 0;
 			putc(c, stdout);
 			fflush(stdout);
-			reg[R_R0] = (uint16_t) c;
+			reg[R_R0] = (uint64_t) (c & 0xFF);
+			printf("Debugging for TRAP_IN: %u", reg[R_R0]);
 			update_flags(R_R0);
 			break;
 		    }
 		    case TRAP_OUT: {
 			putc((char)reg[R_R0], stdout);
+			printf("Debugging for TRAP_OUT: %u", reg[R_R0]);
 			fflush(stdout);
 			break;
 		    }
@@ -208,8 +215,8 @@ int main(int argc, const char* argv[]) {
 		}
 		break;
 	    }
-	    case OP_RES: { abort(); }
-	    case OP_RTI: { abort(); }
+	    case OP_RES: 
+	    case OP_RTI:
 	    default: {
 		abort();
 		break;
