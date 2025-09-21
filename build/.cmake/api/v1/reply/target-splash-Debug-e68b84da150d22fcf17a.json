@@ -35,7 +35,7 @@
 			"compileCommandFragments" : 
 			[
 				{
-					"fragment" : "-std=gnu17 -arch arm64"
+					"fragment" : "-g -std=gnu17 -arch arm64"
 				}
 			],
 			"language" : "C",
@@ -59,6 +59,10 @@
 	{
 		"commandFragments" : 
 		[
+			{
+				"fragment" : "-g",
+				"role" : "flags"
+			},
 			{
 				"fragment" : "-Wl,-search_paths_first -Wl,-headerpad_max_install_names",
 				"role" : "flags"
